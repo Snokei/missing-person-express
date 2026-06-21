@@ -9,17 +9,52 @@ exports.getAllUsers = asyncHandler(async (req, res) => {
   });
 });
 
-exports.createPoliceman = asyncHandler(async (req, res) => {
-  const { firstName, lastName } = req.body;
+exports.createUser = asyncHandler(async (req, res) => {
+  const {
+    first_name,
+    last_name,
+    email,
+    phone,
+    password,
+    role,
+  } = req.body;
+
+  // Check email
+  const existingEmail = await User.findOne({
+    where: { email },
+  });
+
+  if (existingEmail) {
+    return res.status(400).json({
+      success: false,
+      message: 'Email already exists',
+    });
+  }
+
+  // Check phone
+  const existingPhone = await User.findOne({
+    where: { phone },
+  });
+
+  if (existingPhone) {
+    return res.status(400).json({
+      success: false,
+      message: 'Phone number already exists',
+    });
+  }
 
   const user = await User.create({
-    first_name: firstName,
-    last_name: lastName
+    first_name,
+    last_name,
+    email,
+    phone,
+    password, // TODO: Hash with bcrypt
+    role,
   });
 
   res.status(201).json({
     success: true,
-    message: 'Policeman added successfully!',
-    data: user
+    message: 'User created successfully',
+    data: user,
   });
 });
