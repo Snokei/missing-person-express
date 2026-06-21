@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const asyncHandler = require('../middleware/asyncHandler');
 
@@ -43,12 +44,14 @@ exports.createUser = asyncHandler(async (req, res) => {
     });
   }
 
+  const hashedPassword = await bcrypt.hash(password, 10);
+
   const user = await User.create({
     first_name,
     last_name,
     email,
     phone,
-    password, // TODO: Hash with bcrypt
+    password:hashedPassword,
     role,
   });
 
