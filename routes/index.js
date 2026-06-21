@@ -7,6 +7,6 @@ router.get('/health', (req, res) => {
   res.json({ success: true, message: 'API is running' });
 });
 
-// router.use('/users', userRoutes);
+router.use('/users', userRoutes);
 
 module.exports = router;
