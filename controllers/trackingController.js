@@ -4,13 +4,25 @@ exports.saveTracking = async (req, res) => {
   try {
     const { user_id, latitude, longitude } = req.body;
 
-    const tracking = await Tracking.create({
-      user_id,
-      latitude,
-      longitude,
+    let tracking = await Tracking.findOne({
+      where: { user_id },
     });
 
-    res.status(201).json({
+    if (tracking) {
+      await tracking.update({
+        latitude,
+        longitude,
+        tracked_at: new Date(),
+      });
+    } else {
+      tracking = await Tracking.create({
+        user_id,
+        latitude,
+        longitude,
+      });
+    }
+
+    res.status(200).json({
       success: true,
       data: tracking,
     });
