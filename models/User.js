@@ -1,8 +1,8 @@
-const { DataTypes } = require('sequelize');
-const sequelize = require('../config/database');
+const { DataTypes } = require("sequelize");
+const sequelize = require("../config/database");
 
 const User = sequelize.define(
-  'User',
+  "User",
   {
     id: {
       type: DataTypes.INTEGER,
@@ -39,14 +39,13 @@ const User = sequelize.define(
       allowNull: false,
     },
 
-    role: {
-      type: DataTypes.ENUM(
-        'ADMIN',
-        'POLICE_OPERATOR',
-        'FIELD_OFFICER',
-        'VOLUNTEER'
-      ),
-      defaultValue: 'VOLUNTEER',
+    role_id: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: "roles",
+        key: "id",
+      },
     },
 
     is_active: {
@@ -55,10 +54,22 @@ const User = sequelize.define(
     },
   },
   {
-    tableName: 'users',
+    tableName: "users",
     timestamps: true,
     underscored: true,
-  }
+  },
 );
+
+User.associate = (models) => {
+  User.belongsTo(models.Role, {
+    foreignKey: "role_id",
+    as: "role",
+  });
+
+  User.hasMany(models.MissingPerson, {
+    foreignKey: "created_by",
+    as: "missingPersons",
+  });
+};
 
 module.exports = User;

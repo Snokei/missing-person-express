@@ -1,24 +1,17 @@
-const bcrypt = require('bcryptjs');
-const User = require('../models/User');
-const asyncHandler = require('../middleware/asyncHandler');
+const bcrypt = require("bcryptjs");
+const User = require("../models/User");
+const asyncHandler = require("../middleware/asyncHandler");
 
 exports.getAllUsers = asyncHandler(async (req, res) => {
   const users = await User.findAll();
   res.json({
     success: true,
-    data: users
+    data: users,
   });
 });
 
 exports.createUser = asyncHandler(async (req, res) => {
-  const {
-    first_name,
-    last_name,
-    email,
-    phone,
-    password,
-    role,
-  } = req.body;
+  const { first_name, last_name, email, phone, password, role_id } = req.body;
 
   // Check email
   const existingEmail = await User.findOne({
@@ -28,7 +21,7 @@ exports.createUser = asyncHandler(async (req, res) => {
   if (existingEmail) {
     return res.status(400).json({
       success: false,
-      message: 'Email already exists',
+      message: "Email already exists",
     });
   }
 
@@ -40,7 +33,7 @@ exports.createUser = asyncHandler(async (req, res) => {
   if (existingPhone) {
     return res.status(400).json({
       success: false,
-      message: 'Phone number already exists',
+      message: "Phone number already exists",
     });
   }
 
@@ -51,13 +44,13 @@ exports.createUser = asyncHandler(async (req, res) => {
     last_name,
     email,
     phone,
-    password:hashedPassword,
-    role,
+    password: hashedPassword,
+    role_id,
   });
 
   res.status(201).json({
     success: true,
-    message: 'User created successfully',
+    message: "User created successfully",
     data: user,
   });
 });
