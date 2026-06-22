@@ -3,6 +3,7 @@ const sequelize = require("../config/database");
 
 const Role = require("./Role");
 const User = require("./User");
+const Tracking = require("./Tracking");
 const MissingPersonModel = require("./missingPerson");
 
 // Initialize models
@@ -12,6 +13,7 @@ const models = {
   Role,
   User,
   MissingPerson,
+  Tracking,
 };
 
 // Run associations

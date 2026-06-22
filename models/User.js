@@ -70,6 +70,11 @@ User.associate = (models) => {
     foreignKey: "created_by",
     as: "missingPersons",
   });
+
+  User.hasMany(models.Tracking, {
+    foreignKey: "user_id",
+    as: "tracking",
+  });
 };
 
 module.exports = User;
