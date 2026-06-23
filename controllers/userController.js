@@ -54,3 +54,41 @@ exports.createUser = asyncHandler(async (req, res) => {
     data: user,
   });
 });
+
+exports.updateFcmToken = asyncHandler(async (req, res) => {
+  const { user_id, fcm_token } = req.body;
+  const trimmedToken = typeof fcm_token === "string" ? fcm_token.trim() : "";
+
+  if (!user_id || !trimmedToken) {
+    return res.status(400).json({
+      success: false,
+      message: "user_id and fcm_token are required",
+    });
+  }
+
+  if (trimmedToken.length < 100) {
+    return res.status(400).json({
+      success: false,
+      message:
+        "Invalid FCM token. Use the real device token from your mobile app (usually 150+ characters).",
+    });
+  }
+
+  const user = await User.findByPk(user_id);
+
+  if (!user) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  await user.update({
+    fcm_token: trimmedToken,
+  });
+
+  res.json({
+    success: true,
+    message: "FCM token updated successfully",
+  });
+});

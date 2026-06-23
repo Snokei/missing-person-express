@@ -47,6 +47,10 @@ const User = sequelize.define(
         key: "id",
       },
     },
+    fcm_token: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
 
     is_active: {
       type: DataTypes.BOOLEAN,
