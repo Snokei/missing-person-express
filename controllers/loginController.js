@@ -43,6 +43,7 @@ exports.login = asyncHandler(async (req, res) => {
       expiresIn: "7d",
     },
   );
+  console.log(user);
 
   res.status(200).json({
     success: true,
@@ -53,6 +54,7 @@ exports.login = asyncHandler(async (req, res) => {
       last_name: user.last_name,
       phone: user.phone,
       role: user.role_id,
+      expo_push_token: user.expo_push_token,
     },
   });
 });
