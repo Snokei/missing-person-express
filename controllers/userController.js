@@ -1,4 +1,5 @@
 const bcrypt = require("bcryptjs");
+const { Expo } = require("expo-server-sdk");
 const User = require("../models/User");
 const asyncHandler = require("../middleware/asyncHandler");
 
@@ -55,22 +56,23 @@ exports.createUser = asyncHandler(async (req, res) => {
   });
 });
 
-exports.updateFcmToken = asyncHandler(async (req, res) => {
-  const { user_id, fcm_token } = req.body;
-  const trimmedToken = typeof fcm_token === "string" ? fcm_token.trim() : "";
+exports.updateExpoPushToken = asyncHandler(async (req, res) => {
+  const { user_id, expo_push_token } = req.body;
+  const trimmedToken =
+    typeof expo_push_token === "string" ? expo_push_token.trim() : "";
 
   if (!user_id || !trimmedToken) {
     return res.status(400).json({
       success: false,
-      message: "user_id and fcm_token are required",
+      message: "user_id and expo_push_token are required",
     });
   }
 
-  if (trimmedToken.length < 100) {
+  if (!Expo.isExpoPushToken(trimmedToken)) {
     return res.status(400).json({
       success: false,
       message:
-        "Invalid FCM token. Use the real device token from your mobile app (usually 150+ characters).",
+        "Invalid Expo push token. Expected format: ExponentPushToken[...]",
     });
   }
 
@@ -84,11 +86,11 @@ exports.updateFcmToken = asyncHandler(async (req, res) => {
   }
 
   await user.update({
-    fcm_token: trimmedToken,
+    expo_push_token: trimmedToken,
   });
 
   res.json({
     success: true,
-    message: "FCM token updated successfully",
+    message: "Expo push token updated successfully",
   });
 });

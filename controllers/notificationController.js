@@ -21,16 +21,17 @@ exports.testNotification = asyncHandler(async (req, res) => {
     });
   }
 
-  if (!user.fcm_token) {
+  if (!user.expo_push_token) {
     return res.status(400).json({
       success: false,
-      message: "FCM token not found. Save token first via POST /users/token",
+      message:
+        "Expo push token not found. Save token first via POST /users/token",
     });
   }
 
   try {
-    const messageId = await sendNotification({
-      token: user.fcm_token,
+    const tickets = await sendNotification({
+      token: user.expo_push_token,
       title: "Missing Person App",
       body: "Notification is working 🚀",
     });
@@ -38,7 +39,7 @@ exports.testNotification = asyncHandler(async (req, res) => {
     res.json({
       success: true,
       message: "Notification sent successfully",
-      data: { messageId },
+      data: { tickets },
     });
   } catch (error) {
     res.status(500).json({

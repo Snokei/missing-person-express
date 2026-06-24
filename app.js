@@ -1,5 +1,4 @@
 require("dotenv").config();
-require("./config/firebase");
 const express = require("express");
 const routes = require("./routes");
 const notFound = require("./middleware/notFound");

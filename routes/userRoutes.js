@@ -9,6 +9,6 @@ router.post("/login", loginController.login);
 
 router.get("/", protect, userController.getAllUsers);
 router.post("/", protect, userController.createUser);
-router.post("/token", protect, userController.updateFcmToken);
+router.post("/token", protect, userController.updateExpoPushToken);
 
 module.exports = router;

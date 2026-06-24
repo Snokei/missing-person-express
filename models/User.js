@@ -47,7 +47,7 @@ const User = sequelize.define(
         key: "id",
       },
     },
-    fcm_token: {
+    expo_push_token: {
       type: DataTypes.TEXT,
       allowNull: true,
     },
