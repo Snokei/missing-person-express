@@ -1,10 +1,13 @@
 const { Op } = require("sequelize");
 const User = require("../models/User");
 const asyncHandler = require("../middleware/asyncHandler");
-const { sendNotification, sendBulkNotification } = require("../services/notificationService");
+const {
+  sendNotification,
+  sendBulkNotification,
+} = require("../services/notificationService");
 
 exports.testNotification = asyncHandler(async (req, res) => {
-  const { user_id } = req.body;
+  const { user_id, title, body } = req.body;
 
   if (!user_id) {
     return res.status(400).json({
@@ -33,8 +36,8 @@ exports.testNotification = asyncHandler(async (req, res) => {
   try {
     const tickets = await sendNotification({
       token: user.expo_push_token,
-      title: "Missing Person App",
-      body: "Notification is working 🚀",
+      title: title,
+      body: body,
     });
 
     res.json({
