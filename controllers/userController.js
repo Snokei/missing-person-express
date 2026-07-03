@@ -2,11 +2,22 @@ const bcrypt = require("bcryptjs");
 const { Expo } = require("expo-server-sdk");
 const User = require("../models/User");
 const asyncHandler = require("../middleware/asyncHandler");
+const {
+  getPaginationParams,
+  getPaginationMeta,
+} = require("../utils/pagination");
 
 exports.getAllUsers = asyncHandler(async (req, res) => {
-  const users = await User.findAll();
+  const { page, per_page, offset } = getPaginationParams(req.query);
+
+  const { rows: users, count: total } = await User.findAndCountAll({
+    limit: per_page,
+    offset,
+  });
+
   res.json({
     success: true,
+    meta: getPaginationMeta(total, page, per_page),
     data: users,
   });
 });

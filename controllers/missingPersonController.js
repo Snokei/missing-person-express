@@ -1,5 +1,9 @@
 const { MissingPerson } = require("../models");
 const asyncHandler = require("../middleware/asyncHandler");
+const {
+  getPaginationParams,
+  getPaginationMeta,
+} = require("../utils/pagination");
 
 // @desc    Create a new missing person record
 // @route   POST /api/missing-persons
@@ -87,20 +91,24 @@ exports.createMissingPerson = asyncHandler(async (req, res) => {
 // @access  Private
 exports.getAllMissingPersons = asyncHandler(async (req, res) => {
   const { status } = req.query;
+  const { page, per_page, offset } = getPaginationParams(req.query);
 
   const where = {};
   if (status) {
     where.status = status;
   }
 
-  const missingPersons = await MissingPerson.findAll({
-    where,
-    order: [["createdAt", "DESC"]],
-  });
+  const { rows: missingPersons, count: total } =
+    await MissingPerson.findAndCountAll({
+      where,
+      order: [["createdAt", "DESC"]],
+      limit: per_page,
+      offset,
+    });
 
   res.json({
     success: true,
-    count: missingPersons.length,
+    meta: getPaginationMeta(total, page, per_page),
     data: missingPersons,
   });
 });
