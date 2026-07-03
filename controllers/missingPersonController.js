@@ -90,12 +90,18 @@ exports.createMissingPerson = asyncHandler(async (req, res) => {
 // @route   GET /api/missing-persons
 // @access  Private
 exports.getAllMissingPersons = asyncHandler(async (req, res) => {
-  const { status } = req.query;
+  const { status, query } = req.query;
   const { page, per_page, offset } = getPaginationParams(req.query);
-
   const where = {};
   if (status) {
     where.status = status;
+  }
+  if (query) {
+    const { Op } = require("sequelize");
+    where[Op.or] = [
+      { first_name: { [Op.like]: `%${query}%` } },
+      { case_number: { [Op.like]: `%${query}%` } },
+    ];
   }
 
   const { rows: missingPersons, count: total } =
