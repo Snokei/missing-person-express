@@ -1,6 +1,8 @@
 const bcrypt = require("bcryptjs");
 const { Expo } = require("expo-server-sdk");
+const { Op } = require("sequelize");
 const User = require("../models/User");
+const Role = require("../models/Role");
 const asyncHandler = require("../middleware/asyncHandler");
 const {
   getPaginationParams,
@@ -9,8 +11,48 @@ const {
 
 exports.getAllUsers = asyncHandler(async (req, res) => {
   const { page, per_page, offset } = getPaginationParams(req.query);
+  const { first_name, phone, status, role } = req.query;
+
+  // Build filter conditions
+  const whereConditions = {};
+
+  if (first_name) {
+    whereConditions.first_name = {
+      [Op.ilike]: `%${first_name}%`,
+    };
+  }
+
+  if (phone) {
+    whereConditions.phone = {
+      [Op.ilike]: `%${phone}%`,
+    };
+  }
+
+  if (status !== undefined) {
+    whereConditions.is_active = status === "active" ? true : false;
+  }
+
+  // Prepare include for eager loading Role
+  const include = [];
+
+  if (role) {
+    if (!isNaN(role)) {
+      // If role is numeric, treat as role_id
+      whereConditions.role_id = parseInt(role, 10);
+    } else {
+      // If role is text, join with Role model
+      include.push({
+        model: Role,
+        as: "role",
+        where: { name: role },
+        required: true,
+      });
+    }
+  }
 
   const { rows: users, count: total } = await User.findAndCountAll({
+    where: whereConditions,
+    include: include.length > 0 ? include : [{ model: Role, as: "role" }],
     limit: per_page,
     offset,
   });
