@@ -39,7 +39,7 @@ exports.createUser = asyncHandler(async (req, res) => {
 
   // Check phone
   const existingPhone = await User.findOne({
-    where: { phone },
+    where: { phone: String(phone) },
   });
 
   if (existingPhone) {

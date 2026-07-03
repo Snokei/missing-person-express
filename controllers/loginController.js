@@ -14,7 +14,7 @@ exports.login = asyncHandler(async (req, res) => {
   }
 
   const user = await User.findOne({
-    where: { phone },
+    where: { phone: String(phone) },
   });
 
   if (!user) {
