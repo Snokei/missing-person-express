@@ -90,14 +90,35 @@ exports.createMissingPerson = asyncHandler(async (req, res) => {
 // @route   GET /api/missing-persons
 // @access  Private
 exports.getAllMissingPersons = asyncHandler(async (req, res) => {
-  const { status, query } = req.query;
+  const { status, query, gender, ageFrom, ageTo, dateFrom, dateTo } = req.query;
+  const { Op } = require("sequelize");
   const { page, per_page, offset } = getPaginationParams(req.query);
   const where = {};
   if (status) {
     where.status = status;
   }
+  if (gender) {
+    where.gender = gender;
+  }
+  if (ageFrom || ageTo) {
+    if (ageFrom && ageTo) {
+      where.age = { [Op.between]: [ageFrom, ageTo] };
+    } else if (ageFrom) {
+      where.age = { [Op.gte]: ageFrom };
+    } else if (ageTo) {
+      where.age = { [Op.lte]: ageTo };
+    }
+  }
+  if (dateFrom || dateTo) {
+    if (dateFrom && dateTo) {
+      where.last_seen_date = { [Op.between]: [dateFrom, dateTo] };
+    } else if (dateFrom) {
+      where.last_seen_date = { [Op.gte]: dateFrom };
+    } else if (dateTo) {
+      where.last_seen_date = { [Op.lte]: dateTo };
+    }
+  }
   if (query) {
-    const { Op } = require("sequelize");
     where[Op.or] = [
       { first_name: { [Op.like]: `%${query}%` } },
       { case_number: { [Op.like]: `%${query}%` } },
