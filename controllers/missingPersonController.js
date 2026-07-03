@@ -31,6 +31,7 @@ exports.createMissingPerson = asyncHandler(async (req, res) => {
     last_seen_location,
     circumstances,
     status,
+    missing_person_mobile_number,
   } = req.body;
 
   // Validate required fields
@@ -61,6 +62,7 @@ exports.createMissingPerson = asyncHandler(async (req, res) => {
     last_name,
     gender,
     age,
+    missing_person_mobile_number,
     language_spoken,
     height,
     weight,
@@ -98,6 +100,7 @@ exports.getAllMissingPersons = asyncHandler(async (req, res) => {
     age_to: ageTo,
     date_from: dateFrom,
     date_to: dateTo,
+    locations,
   } = req.query;
   const { Op } = require("sequelize");
   const { page, per_page, offset } = getPaginationParams(req.query);
@@ -131,6 +134,15 @@ exports.getAllMissingPersons = asyncHandler(async (req, res) => {
       { first_name: { [Op.like]: `%${query}%` } },
       { case_number: { [Op.like]: `%${query}%` } },
     ];
+  }
+  if (locations) {
+    const locationList = locations
+      .split(",")
+      .map((loc) => loc.trim())
+      .filter(Boolean);
+    if (locationList.length > 0) {
+      where.last_seen_location = { [Op.in]: locationList };
+    }
   }
 
   const { rows: missingPersons, count: total } =

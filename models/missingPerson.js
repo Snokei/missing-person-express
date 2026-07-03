@@ -28,6 +28,11 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
       },
 
+      missing_person_mobile_number: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+
       gender: {
         type: DataTypes.STRING,
       },
