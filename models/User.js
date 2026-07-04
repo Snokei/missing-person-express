@@ -79,6 +79,16 @@ User.associate = (models) => {
     foreignKey: "user_id",
     as: "tracking",
   });
+
+  User.hasMany(models.MissingItem, {
+    foreignKey: "created_by",
+    as: "reportedMissingItems",
+  });
+
+  User.hasMany(models.MissingItem, {
+    foreignKey: "updated_by",
+    as: "updatedMissingItems",
+  });
 };
 
 module.exports = User;

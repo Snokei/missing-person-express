@@ -127,6 +127,11 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: "created_by",
       as: "creator",
     });
+
+    MissingPerson.hasMany(models.MissingItem, {
+      foreignKey: "case_id",
+      as: "missingItems",
+    });
   };
 
   return MissingPerson;

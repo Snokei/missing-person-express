@@ -5,16 +5,19 @@ const Role = require("./Role");
 const User = require("./User");
 const Tracking = require("./Tracking");
 const MissingPersonModel = require("./missingPerson");
+const MissingItemModel = require("./MissingItem");
 const Notification = require("./Notification");
 const NotificationRecipient = require("./NotificationRecipient");
 
 // Initialize models
 const MissingPerson = MissingPersonModel(sequelize, DataTypes);
+const MissingItem = MissingItemModel(sequelize, DataTypes);
 
 const models = {
   Role,
   User,
   MissingPerson,
+  MissingItem,
   Tracking,
   Notification,
   NotificationRecipient,
