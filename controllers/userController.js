@@ -11,20 +11,19 @@ const {
 
 exports.getAllUsers = asyncHandler(async (req, res) => {
   const { page, per_page, offset } = getPaginationParams(req.query);
-  const { first_name, phone, status, role } = req.query;
-
+  const { query, phone, status, role } = req.query;
   // Build filter conditions
   const whereConditions = {};
 
-  if (first_name) {
+  if (query) {
     whereConditions.first_name = {
-      [Op.ilike]: `%${first_name}%`,
+      [Op.iLike]: `%${query}%`,
     };
   }
 
   if (phone) {
     whereConditions.phone = {
-      [Op.ilike]: `%${phone}%`,
+      [Op.iLike]: `%${phone}%`,
     };
   }
 
