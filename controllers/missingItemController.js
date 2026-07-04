@@ -1,9 +1,6 @@
 const { MissingItem, MissingPerson, User } = require("../models");
 const asyncHandler = require("../middleware/asyncHandler");
-const {
-  getPaginationParams,
-  getPaginationMeta,
-} = require("../utils/pagination");
+const { getPaginationParams } = require("../utils/pagination");
 const { Op } = require("sequelize");
 
 // @desc    Create a new missing item
@@ -15,21 +12,17 @@ exports.createMissingItem = asyncHandler(async (req, res) => {
     category,
     item_name,
     description,
-    brand,
-    model,
-    color,
-    serial_number,
-    unique_identifier,
-    estimated_value,
     quantity,
-    photo_url,
+    estimated_value,
     lost_date,
     lost_time,
     lost_location,
     landmark,
     status,
-    attributes,
     remarks,
+    // Extract known non-attribute fields first, rest go into attributes
+    attributes,
+    ...rest
   } = req.body;
 
   // Validate required fields
@@ -50,29 +43,33 @@ exports.createMissingItem = asyncHandler(async (req, res) => {
     });
   }
 
-  const missingItem = await MissingItem.create({
+  // Merge explicitly provided attributes + any extra fields from the body.
+  // This allows sending category-specific fields (e.g., brand, model, imei,
+  // passport_number, aadhaar_number) directly in the request body — they
+  // automatically land in the attributes JSONB.
+  const mergedAttributes = {
+    ...(attributes || {}),
+    ...rest,
+  };
+
+  const payload = {
     case_id,
     category,
     item_name,
-    description,
-    brand,
-    model,
-    color,
-    serial_number,
-    unique_identifier,
-    estimated_value,
+    description: description || null,
     quantity: quantity || 1,
-    photo_url,
+    estimated_value: estimated_value || null,
     lost_date,
-    lost_time,
+    lost_time: lost_time || null,
     lost_location,
-    landmark,
+    landmark: landmark || null,
     status: status || "MISSING",
-    attributes: attributes || null,
-    remarks,
+    attributes: Object.keys(mergedAttributes).length > 0 ? mergedAttributes : {},
+    remarks: remarks || null,
     created_by: req.user.id,
-    updated_by: req.user.id,
-  });
+  };
+
+  const missingItem = await MissingItem.create(payload);
 
   res.status(201).json({
     success: true,
@@ -81,7 +78,7 @@ exports.createMissingItem = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Get all missing items
+// @desc    Get all missing items (with filters, search, pagination)
 // @route   GET /api/missing-items
 // @access  Private
 exports.getMissingItems = asyncHandler(async (req, res) => {
@@ -116,10 +113,10 @@ exports.getMissingItems = asyncHandler(async (req, res) => {
       offset,
       order: [["createdAt", "DESC"]],
       include: [
-        // {
-        //   model: MissingPerson,
-        //   as: "case",
-        // },
+        {
+          model: MissingPerson,
+          as: "case",
+        },
         {
           model: User,
           as: "reportedBy",

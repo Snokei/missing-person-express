@@ -29,35 +29,6 @@ module.exports = (sequelize, DataTypes) => {
 
       description: {
         type: DataTypes.TEXT,
-      },
-
-      brand: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-
-      model: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-
-      color: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-
-      serial_number: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-
-      unique_identifier: {
-        type: DataTypes.STRING,
-        allowNull: true,
-      },
-
-      estimated_value: {
-        type: DataTypes.DECIMAL,
         allowNull: true,
       },
 
@@ -66,8 +37,8 @@ module.exports = (sequelize, DataTypes) => {
         defaultValue: 1,
       },
 
-      photo_url: {
-        type: DataTypes.TEXT,
+      estimated_value: {
+        type: DataTypes.DECIMAL(12, 2),
         allowNull: true,
       },
 
@@ -78,6 +49,7 @@ module.exports = (sequelize, DataTypes) => {
 
       lost_time: {
         type: DataTypes.TIME,
+        allowNull: true,
       },
 
       lost_location: {
@@ -97,7 +69,7 @@ module.exports = (sequelize, DataTypes) => {
 
       attributes: {
         type: DataTypes.JSONB,
-        allowNull: true,
+        defaultValue: {},
       },
 
       remarks: {
