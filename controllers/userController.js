@@ -9,10 +9,13 @@ const {
   getPaginationMeta,
 } = require("../utils/pagination");
 
+// @desc    Get all users (supports CSV/PDF export)
+// @route   GET /api/users
+// @access  Private
 exports.getAllUsers = asyncHandler(async (req, res) => {
   const { page, per_page, offset } = getPaginationParams(req.query);
-  const { query, phone, status, role } = req.query;
-  // Build filter conditions
+  const { query, phone, status, role, export_format } = req.query;
+
   const whereConditions = {};
 
   if (query) {
@@ -31,15 +34,12 @@ exports.getAllUsers = asyncHandler(async (req, res) => {
     whereConditions.is_active = status === "active" ? true : false;
   }
 
-  // Prepare include for eager loading Role
   const include = [];
 
   if (role) {
     if (!isNaN(role)) {
-      // If role is numeric, treat as role_id
       whereConditions.role_id = parseInt(role, 10);
     } else {
-      // If role is text, join with Role model
       include.push({
         model: Role,
         as: "role",
@@ -49,12 +49,30 @@ exports.getAllUsers = asyncHandler(async (req, res) => {
     }
   }
 
-  const { rows: users, count: total } = await User.findAndCountAll({
+  const isExport = export_format === "csv" || export_format === "pdf";
+
+  const queryOptions = {
     where: whereConditions,
     include: include.length > 0 ? include : [{ model: Role, as: "role" }],
-    limit: per_page,
-    offset,
-  });
+  };
+
+  if (!isExport) {
+    queryOptions.limit = per_page;
+    queryOptions.offset = offset;
+  }
+
+  const { rows: users, count: total } =
+    await User.findAndCountAll(queryOptions);
+
+  if (isExport) {
+    return res.json({
+      success: true,
+      is_export: true,
+      export_format,
+      total_exported: users.length,
+      data: users,
+    });
+  }
 
   res.json({
     success: true,

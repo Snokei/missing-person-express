@@ -88,7 +88,7 @@ exports.createMissingPerson = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Get all missing persons
+// @desc    Get all missing persons (supports CSV/PDF export)
 // @route   GET /api/missing-persons
 // @access  Private
 exports.getAllMissingPersons = asyncHandler(async (req, res) => {
@@ -101,10 +101,13 @@ exports.getAllMissingPersons = asyncHandler(async (req, res) => {
     date_from: dateFrom,
     date_to: dateTo,
     locations,
+    export_format, // NEW: 'csv' or 'pdf'
   } = req.query;
+
   const { Op } = require("sequelize");
   const { page, per_page, offset } = getPaginationParams(req.query);
   const where = {};
+
   if (status) {
     where.status = status;
   }
@@ -145,13 +148,30 @@ exports.getAllMissingPersons = asyncHandler(async (req, res) => {
     }
   }
 
+  const isExport = export_format === "csv" || export_format === "pdf";
+
+  const queryOptions = {
+    where,
+    order: [["createdAt", "DESC"]],
+  };
+
+  if (!isExport) {
+    queryOptions.limit = per_page;
+    queryOptions.offset = offset;
+  }
+
   const { rows: missingPersons, count: total } =
-    await MissingPerson.findAndCountAll({
-      where,
-      order: [["createdAt", "DESC"]],
-      limit: per_page,
-      offset,
+    await MissingPerson.findAndCountAll(queryOptions);
+
+  if (isExport) {
+    return res.json({
+      success: true,
+      is_export: true,
+      export_format,
+      total_exported: missingPersons.length,
+      data: missingPersons,
     });
+  }
 
   res.json({
     success: true,
