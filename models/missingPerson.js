@@ -102,7 +102,7 @@ module.exports = (sequelize, DataTypes) => {
       },
 
       status: {
-        type: DataTypes.STRING,
+        type: DataTypes.ENUM("Missing", "Found", "Closed"),
         defaultValue: "Missing",
       },
 

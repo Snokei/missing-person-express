@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.post("/", protect, missingPersonController.createMissingPerson);
 router.get("/", protect, missingPersonController.getAllMissingPersons);
+router.get("/stats", protect, missingPersonController.getCaseStats);
 router.get("/:id", protect, missingPersonController.getMissingPersonById);
 
 module.exports = router;

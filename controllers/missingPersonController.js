@@ -200,3 +200,23 @@ exports.getMissingPersonById = asyncHandler(async (req, res) => {
     data: missingPerson,
   });
 });
+
+// @desc    Get case statistics (total, found, missing, closed)
+// @route   GET /api/missing-persons/stats
+// @access  Private
+exports.getCaseStats = asyncHandler(async (req, res) => {
+  const total = await MissingPerson.count();
+  const missing = await MissingPerson.count({ where: { status: "Missing" } });
+  const found = await MissingPerson.count({ where: { status: "Found" } });
+  const closed = await MissingPerson.count({ where: { status: "Closed" } });
+
+  res.json({
+    success: true,
+    data: {
+      total,
+      missing,
+      found,
+      closed,
+    },
+  });
+});
