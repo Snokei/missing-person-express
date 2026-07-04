@@ -3,10 +3,95 @@ const asyncHandler = require("../middleware/asyncHandler");
 const { getPaginationParams } = require("../utils/pagination");
 const { Op } = require("sequelize");
 
-// @desc    Create a new missing item
+// @desc    Create missing item(s) — supports single item or bulk via `stolen` array
 // @route   POST /api/missing-items
 // @access  Private
 exports.createMissingItem = asyncHandler(async (req, res) => {
+  const { stolen, reporter_name, phone, gov_card_type, gov_card, ...rest } =
+    req.body;
+
+  // ── BULK MODE: if `stolen` array is present ──────────────────────────
+  if (Array.isArray(stolen) && stolen.length > 0) {
+    const createdItems = [];
+
+    for (const item of stolen) {
+      const {
+        case_id,
+        category,
+        item_name,
+        description,
+        quantity,
+        estimated_value,
+        lost_date,
+        lost_time,
+        lost_location,
+        landmark,
+        status,
+        remarks,
+        attributes,
+        ...itemRest
+      } = item;
+
+      // Validate required fields for each item
+      if (!case_id || !category || !item_name || !lost_date || !lost_location) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "Each item in stolen requires case_id, category, item_name, lost_date and lost_location",
+        });
+      }
+
+      // Verify case exists
+      const existingCase = await MissingPerson.findByPk(case_id);
+      if (!existingCase) {
+        return res.status(404).json({
+          success: false,
+          message: `Case not found for case_id: ${case_id}`,
+        });
+      }
+
+      // Merge attributes: item-level attributes + item-level extra fields + top-level extra fields
+      const mergedAttributes = {
+        ...(attributes || {}),
+        ...itemRest,
+        ...rest,
+      };
+
+      const payload = {
+        case_id,
+        category,
+        reporter_name: reporter_name || null,
+        phone: phone || null,
+        gov_card_type: gov_card_type || null,
+        gov_card: gov_card || null,
+        item_name,
+        description: description || null,
+        quantity: quantity || 1,
+        estimated_value: estimated_value || null,
+        lost_date,
+        lost_time: lost_time || null,
+        lost_location,
+        landmark: landmark || null,
+        status: status || "MISSING",
+        attributes:
+          Object.keys(mergedAttributes).length > 0 ? mergedAttributes : {},
+        remarks: remarks || null,
+        created_by: req.user.id,
+      };
+
+      const missingItem = await MissingItem.create(payload);
+      createdItems.push(missingItem);
+    }
+
+    return res.status(201).json({
+      success: true,
+      message: `${createdItems.length} missing item(s) created successfully`,
+      count: createdItems.length,
+      data: createdItems,
+    });
+  }
+
+  // ── SINGLE MODE: original behavior ───────────────────────────────────
   const {
     case_id,
     category,
@@ -20,9 +105,8 @@ exports.createMissingItem = asyncHandler(async (req, res) => {
     landmark,
     status,
     remarks,
-    // Extract known non-attribute fields first, rest go into attributes
     attributes,
-    ...rest
+    ...singleRest
   } = req.body;
 
   // Validate required fields
@@ -44,17 +128,18 @@ exports.createMissingItem = asyncHandler(async (req, res) => {
   }
 
   // Merge explicitly provided attributes + any extra fields from the body.
-  // This allows sending category-specific fields (e.g., brand, model, imei,
-  // passport_number, aadhaar_number) directly in the request body — they
-  // automatically land in the attributes JSONB.
   const mergedAttributes = {
     ...(attributes || {}),
-    ...rest,
+    ...singleRest,
   };
 
   const payload = {
     case_id,
     category,
+    reporter_name: reporter_name || null,
+    phone: phone || null,
+    gov_card_type: gov_card_type || null,
+    gov_card: gov_card || null,
     item_name,
     description: description || null,
     quantity: quantity || 1,
@@ -91,6 +176,9 @@ exports.getMissingItems = asyncHandler(async (req, res) => {
       { item_name: { [Op.iLike]: `%${search}%` } },
       { description: { [Op.iLike]: `%${search}%` } },
       { lost_location: { [Op.iLike]: `%${search}%` } },
+      { reporter_name: { [Op.iLike]: `%${search}%` } },
+      { phone: { [Op.iLike]: `%${search}%` } },
+      { gov_card: { [Op.iLike]: `%${search}%` } },
     ];
   }
 
@@ -104,6 +192,18 @@ exports.getMissingItems = asyncHandler(async (req, res) => {
 
   if (case_id) {
     where.case_id = case_id;
+  }
+
+  if (req.query.gov_card_type) {
+    where.gov_card_type = req.query.gov_card_type;
+  }
+
+  if (req.query.phone) {
+    where.phone = { [Op.iLike]: `%${req.query.phone}%` };
+  }
+
+  if (req.query.reporter_name) {
+    where.reporter_name = { [Op.iLike]: `%${req.query.reporter_name}%` };
   }
 
   const { rows: missingItems, count: total } =

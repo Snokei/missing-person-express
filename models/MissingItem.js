@@ -22,6 +22,26 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
 
+      reporter_name: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+
+      phone: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+
+      gov_card_type: {
+        type: DataTypes.ENUM("aadhaar", "pan", "voter"),
+        allowNull: true,
+      },
+
+      gov_card: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+
       item_name: {
         type: DataTypes.STRING,
         allowNull: false,
