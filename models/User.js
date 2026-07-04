@@ -52,16 +52,6 @@ const User = sequelize.define(
       allowNull: true,
     },
 
-    gov_card_type: {
-      type: DataTypes.ENUM("aadhaar", "pan", "voter"),
-      allowNull: true,
-    },
-
-    gov_card: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-
     is_active: {
       type: DataTypes.BOOLEAN,
       defaultValue: true,
