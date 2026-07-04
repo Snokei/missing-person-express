@@ -228,6 +228,7 @@ const getUserNotifications = async ({ userId, page, perPage, offset }) => {
     read_at: recipient.read_at,
     deleted_at: recipient.deleted_at,
     created_at: recipient.created_at,
+    createdAt: recipient.created_at,
     notification: {
       id: recipient.notification.id,
       title: recipient.notification.title,
@@ -238,6 +239,8 @@ const getUserNotifications = async ({ userId, page, perPage, offset }) => {
       created_by: recipient.notification.created_by,
       created_at: recipient.notification.created_at,
       updated_at: recipient.notification.updated_at,
+      createdAt: recipient.notification.created_at,
+      updatedAt: recipient.notification.updated_at,
     },
   }));
 
