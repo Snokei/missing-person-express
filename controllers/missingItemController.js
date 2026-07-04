@@ -7,7 +7,7 @@ const { Op } = require("sequelize");
 // @route   POST /api/missing-items
 // @access  Private
 exports.createMissingItem = asyncHandler(async (req, res) => {
-  const { stolen, reporter_name, phone, gov_card_type, gov_card, ...rest } =
+  const { stolen, reporter_first_name, reporter_last_name, phone, gov_card_type, gov_card, ...rest } =
     req.body;
 
   // ── BULK MODE: if `stolen` array is present ──────────────────────────
@@ -60,7 +60,8 @@ exports.createMissingItem = asyncHandler(async (req, res) => {
       const payload = {
         case_id,
         category,
-        reporter_name: reporter_name || null,
+        reporter_first_name: reporter_first_name || null,
+        reporter_last_name: reporter_last_name || null,
         phone: phone || null,
         gov_card_type: gov_card_type || null,
         gov_card: gov_card || null,
@@ -136,7 +137,8 @@ exports.createMissingItem = asyncHandler(async (req, res) => {
   const payload = {
     case_id,
     category,
-    reporter_name: reporter_name || null,
+    reporter_first_name: reporter_first_name || null,
+    reporter_last_name: reporter_last_name || null,
     phone: phone || null,
     gov_card_type: gov_card_type || null,
     gov_card: gov_card || null,
@@ -176,7 +178,8 @@ exports.getMissingItems = asyncHandler(async (req, res) => {
       { item_name: { [Op.iLike]: `%${search}%` } },
       { description: { [Op.iLike]: `%${search}%` } },
       { lost_location: { [Op.iLike]: `%${search}%` } },
-      { reporter_name: { [Op.iLike]: `%${search}%` } },
+      { reporter_first_name: { [Op.iLike]: `%${search}%` } },
+      { reporter_last_name: { [Op.iLike]: `%${search}%` } },
       { phone: { [Op.iLike]: `%${search}%` } },
       { gov_card: { [Op.iLike]: `%${search}%` } },
     ];
@@ -202,8 +205,12 @@ exports.getMissingItems = asyncHandler(async (req, res) => {
     where.phone = { [Op.iLike]: `%${req.query.phone}%` };
   }
 
-  if (req.query.reporter_name) {
-    where.reporter_name = { [Op.iLike]: `%${req.query.reporter_name}%` };
+  if (req.query.reporter_first_name) {
+    where.reporter_first_name = { [Op.iLike]: `%${req.query.reporter_first_name}%` };
+  }
+
+  if (req.query.reporter_last_name) {
+    where.reporter_last_name = { [Op.iLike]: `%${req.query.reporter_last_name}%` };
   }
 
   const { rows: missingItems, count: total } =

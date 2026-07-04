@@ -22,7 +22,12 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
       },
 
-      reporter_name: {
+      reporter_first_name: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+
+      reporter_last_name: {
         type: DataTypes.STRING,
         allowNull: true,
       },
