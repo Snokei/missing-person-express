@@ -4,6 +4,10 @@ const {
   getPaginationParams,
   getPaginationMeta,
 } = require("../utils/pagination");
+const {
+  ingestMissingPerson,
+  deleteVector,
+} = require("../src/services/vectorStoreService");
 
 // @desc    Create a new missing person record
 // @route   POST /api/missing-persons
@@ -80,6 +84,14 @@ exports.createMissingPerson = asyncHandler(async (req, res) => {
     status: status || "Missing",
     created_by: req.user?.id,
   });
+
+  // Auto-ingest into vector store for RAG search
+  try {
+    await ingestMissingPerson(missingPerson.id);
+  } catch (vectorError) {
+    console.error("⚠️ Failed to ingest vector for new record:", vectorError.message);
+    // Non-blocking: don't fail the request if vector ingestion fails
+  }
 
   res.status(201).json({
     success: true,
@@ -219,5 +231,98 @@ exports.getCaseStats = asyncHandler(async (req, res) => {
       found,
       closed,
     },
+  });
+});
+
+// @desc    Update a missing person record
+// @route   PUT /api/missing-persons/:id
+// @access  Private
+exports.updateMissingPerson = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const missingPerson = await MissingPerson.findByPk(id);
+
+  if (!missingPerson) {
+    return res.status(404).json({
+      success: false,
+      message: "Missing person record not found",
+    });
+  }
+
+  const allowedFields = [
+    "case_number",
+    "photo_url",
+    "first_name",
+    "last_name",
+    "gender",
+    "age",
+    "language_spoken",
+    "height",
+    "weight",
+    "medical_condition",
+    "identification_mark",
+    "reporter_name",
+    "mobile_number",
+    "alternative_number",
+    "relationship",
+    "address",
+    "last_seen_date",
+    "last_seen_time",
+    "last_seen_location",
+    "circumstances",
+    "status",
+    "missing_person_mobile_number",
+  ];
+
+  const updateData = {};
+  for (const field of allowedFields) {
+    if (req.body[field] !== undefined) {
+      updateData[field] = req.body[field];
+    }
+  }
+
+  await missingPerson.update(updateData);
+
+  // Re-ingest vector for updated record
+  try {
+    await ingestMissingPerson(missingPerson.id);
+  } catch (vectorError) {
+    console.error("⚠️ Failed to update vector for record:", vectorError.message);
+  }
+
+  res.json({
+    success: true,
+    message: "Missing person record updated successfully",
+    data: missingPerson,
+  });
+});
+
+// @desc    Delete a missing person record
+// @route   DELETE /api/missing-persons/:id
+// @access  Private
+exports.deleteMissingPerson = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const missingPerson = await MissingPerson.findByPk(id);
+
+  if (!missingPerson) {
+    return res.status(404).json({
+      success: false,
+      message: "Missing person record not found",
+    });
+  }
+
+  // Delete associated vector embedding first
+  try {
+    await deleteVector(missingPerson.id);
+  } catch (vectorError) {
+    console.error("⚠️ Failed to delete vector for record:", vectorError.message);
+  }
+
+  await missingPerson.destroy();
+
+  res.json({
+    success: true,
+    message: "Missing person record deleted successfully",
   });
 });

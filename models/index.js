@@ -8,6 +8,7 @@ const MissingPersonModel = require("./missingPerson");
 const MissingItemModel = require("./MissingItem");
 const Notification = require("./Notification");
 const NotificationRecipient = require("./NotificationRecipient");
+const VectorStore = require("../src/models/VectorStore");
 
 // Initialize models
 const MissingPerson = MissingPersonModel(sequelize, DataTypes);
@@ -21,6 +22,7 @@ const models = {
   Tracking,
   Notification,
   NotificationRecipient,
+  VectorStore,
 };
 
 // Run associations
