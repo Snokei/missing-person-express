@@ -40,6 +40,7 @@ async function chatHandler(req, res) {
     // Return the answer
     return res.status(200).json(result);
   } catch (error) {
+    console.log(error,"error")
     console.error("❌ Chat error:", error.message);
 
     // Handle specific error types

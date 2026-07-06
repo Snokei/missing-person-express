@@ -8,18 +8,18 @@
  * 4. Send to Gemini for answer generation
  * 5. Return the answer
  */
-const { ChatGoogleGenerativeAI } = require("@langchain/google-genai");
+const { ChatGroq } = require("@langchain/groq");
 const { StringOutputParser } = require("@langchain/core/output_parsers");
 const aiConfig = require("../../../config/ai");
 const { createChatPrompt } = require("../prompts/chatPrompt");
 const { retrieveContext } = require("../retriever/retrieverService");
 
-// Initialize the Gemini chat model
-const chatModel = new ChatGoogleGenerativeAI({
-  apiKey: aiConfig.gemini.apiKey,
-  model: aiConfig.gemini.chatModel,
+// Initialize the Groq chat model
+const chatModel = new ChatGroq({
+  apiKey: aiConfig.groq.apiKey,
+  model: aiConfig.groq.chatModel,
   temperature: 0.1, // Low temperature for factual responses
-  maxOutputTokens: 1024,
+  maxTokens: 1024,
 });
 
 // Output parser to extract string from LLM response

@@ -12,6 +12,10 @@ const config = {
     chatModel: process.env.GEMINI_CHAT_MODEL || "gemini-2.5-flash",
     embeddingModel: process.env.GEMINI_EMBEDDING_MODEL || "embedding-001",
   },
+  groq: {
+    apiKey: process.env.GROQ_API_KEY,
+    chatModel: process.env.GROQ_CHAT_MODEL || "llama-3.1-8b-instant",
+  }
 };
 
 // Validate API key presence at startup
