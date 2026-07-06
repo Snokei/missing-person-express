@@ -134,8 +134,9 @@ exports.getAllMissingPersons = asyncHandler(async (req, res) => {
   }
   if (query) {
     where[Op.or] = [
-      { first_name: { [Op.like]: `%${query}%` } },
-      { case_number: { [Op.like]: `%${query}%` } },
+      { first_name: { [Op.iLike]: `%${query}%` } },
+      { last_name: { [Op.iLike]: `%${query}%` } },
+      { case_number: { [Op.iLike]: `%${query}%` } },
     ];
   }
   if (locations) {
