@@ -121,7 +121,13 @@ exports.getAllMissingPersons = asyncHandler(async (req, res) => {
   const where = {};
 
   if (status) {
-    where.status = status;
+    const statusList = status
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (statusList.length > 0) {
+      where.status = { [Op.in]: statusList };
+    }
   }
   if (gender) {
     where.gender = gender;
