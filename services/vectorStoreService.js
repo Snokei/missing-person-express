@@ -5,14 +5,14 @@
  * Handles insertion, updating, deletion, and similarity search of embeddings.
  */
 const { Op } = require("sequelize");
-const sequelize = require("../../config/database");
-const { MissingPerson } = require("../../models");
+const sequelize = require("../config/database");
+const { MissingPerson } = require("../models");
 const VectorStore = require("../models/VectorStore");
 const {
   formatPersonForEmbedding,
   generateEmbedding,
   generateQueryEmbedding,
-} = require("../ai/embeddings/embeddingService");
+} = require("../src/ai/embeddings/embeddingService");
 
 /**
  * Computes cosine similarity between two vectors.

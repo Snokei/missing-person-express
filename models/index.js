@@ -8,7 +8,7 @@ const MissingPersonModel = require("./missingPerson");
 const MissingItemModel = require("./MissingItem");
 const Notification = require("./Notification");
 const NotificationRecipient = require("./NotificationRecipient");
-const VectorStore = require("../src/models/VectorStore");
+const VectorStore = require("./VectorStore");
 
 // Initialize models
 const MissingPerson = MissingPersonModel(sequelize, DataTypes);

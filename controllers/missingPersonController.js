@@ -7,7 +7,7 @@ const {
 const {
   ingestMissingPerson,
   deleteVector,
-} = require("../src/services/vectorStoreService");
+} = require("../services/vectorStoreService");
 
 // @desc    Create a new missing person record
 // @route   POST /api/missing-persons

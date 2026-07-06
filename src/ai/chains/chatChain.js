@@ -10,7 +10,7 @@
  */
 const { ChatGoogleGenerativeAI } = require("@langchain/google-genai");
 const { StringOutputParser } = require("@langchain/core/output_parsers");
-const aiConfig = require("../../config/ai");
+const aiConfig = require("../../../config/ai");
 const { createChatPrompt } = require("../prompts/chatPrompt");
 const { retrieveContext } = require("../retriever/retrieverService");
 

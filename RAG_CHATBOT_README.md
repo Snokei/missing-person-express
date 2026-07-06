@@ -19,28 +19,43 @@ User Query → Embedding → Vector Search → Context Retrieval → Gemini LLM 
 ### Folder Structure
 
 ```
+config/
+├── ai.js                    # Gemini API configuration
+└── database.js              # Database connection
+
+models/
+├── index.js                 # Sequelize model loader
+├── missingPerson.js         # Missing person model
+├── MissingItem.js           # Missing item model
+├── ...
+└── VectorStore.js           # Sequelize model for vector embeddings
+
+controllers/
+├── chatController.js        # HTTP handler for POST /api/chat
+└── ...
+
+routes/
+├── index.js                 # Route aggregator
+├── chatRoutes.js            # POST /api/chat endpoint definition
+└── ...
+
+services/
+├── vectorStoreService.js    # CRUD + similarity search for vectors
+├── seedVectors.js           # Bulk-ingest existing records into vector store
+└── ...
+
 src/
-├── config/
-│   ├── ai.js              # Gemini API configuration
-│   └── pgvector.sql       # SQL to enable pgvector extension
 ├── ai/
 │   ├── embeddings/
-│   │   └── embeddingService.js  # Text-to-embedding conversion
+│   │   └── embeddingService.js   # Text-to-embedding conversion (Gemini)
 │   ├── retriever/
-│   │   └── retrieverService.js  # Context retrieval from vector DB
+│   │   └── retrieverService.js   # Context retrieval from vector store
 │   ├── prompts/
-│   │   └── chatPrompt.js        # System prompt template
+│   │   └── chatPrompt.js         # System prompt template for Gemini
 │   └── chains/
-│       └── chatChain.js         # RAG pipeline orchestrator
-├── controllers/
-│   └── chatController.js        # HTTP request handler
-├── routes/
-│   └── chatRoutes.js            # POST /api/chat endpoint
-├── models/
-│   └── VectorStore.js           # Sequelize model for vectors
-└── services/
-    ├── vectorStoreService.js    # CRUD for vector embeddings
-    └── seedVectors.js           # Bulk-ingest existing records
+│       └── chatChain.js          # RAG pipeline orchestrator
+└── config/
+    └── pgvector.sql              # SQL to enable pgvector extension
 ```
 
 ## Prerequisites
@@ -103,7 +118,7 @@ CREATE INDEX IF NOT EXISTS idx_vector_store_embedding
 To ingest all existing missing person records into the vector store:
 
 ```bash
-node src/services/seedVectors.js
+node services/seedVectors.js
 ```
 
 This will generate embeddings for every record in your `missing_persons` table.
@@ -194,26 +209,55 @@ When a new missing person is **created** or **updated** via the API, the system 
 
 When a missing person is **deleted**, the associated vector is also removed.
 
+This auto-ingestion is handled by `controllers/missingPersonController.js`, which calls `services/vectorStoreService.js` after each create, update, or delete operation.
+
 ## How It Works
 
 1. **User sends a question** → `POST /api/chat`
-2. **Question is embedded** → Converted to a vector using `text-embedding-004`
-3. **Vector search** → Finds top 5 most similar records using cosine similarity
-4. **Context is formatted** → Retrieved records are formatted as structured context
-5. **Gemini generates answer** → LLM answers using ONLY the provided context
-6. **Response returned** → Clean answer with no hallucinations
+2. **Routed to controller** → `routes/chatRoutes.js` → `controllers/chatController.js`
+3. **Controller invokes RAG pipeline** → `controllers/chatController.js` calls `src/ai/chains/chatChain.js`
+4. **Question is embedded** → `src/ai/embeddings/embeddingService.js` converts it to a vector
+5. **Vector search** → `services/vectorStoreService.js` finds top 5 most similar records using cosine similarity (via `models/VectorStore.js`)
+6. **Context is formatted** → `src/ai/retriever/retrieverService.js` formats retrieved records into structured context
+7. **Gemini generates answer** → `src/ai/chains/chatChain.js` passes context + question to Gemini with the system prompt from `src/ai/prompts/chatPrompt.js`
+8. **Response returned** → Clean answer with no hallucinations
+
+## Data Flow Summary
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                      REQUEST FLOW                           │
+│                                                              │
+│  client → routes/chatRoutes.js                               │
+│              → controllers/chatController.js                 │
+│                  → src/ai/chains/chatChain.js                │
+│                      → src/ai/retriever/retrieverService.js  │
+│                          → services/vectorStoreService.js    │
+│                              → models/VectorStore.js         │
+│                      → src/ai/embeddings/embeddingService.js │
+│                      → src/ai/prompts/chatPrompt.js          │
+│                  ← { answer } ←                              │
+│                                                              │
+│                      AUTO-INGESTION                           │
+│                                                              │
+│  controllers/missingPersonController.js                      │
+│      → services/vectorStoreService.js                        │
+│          → models/VectorStore.js                             │
+│          → src/ai/embeddings/embeddingService.js             │
+└──────────────────────────────────────────────────────────────┘
+```
 
 ## Extending the System
 
 To add more data sources (e.g., Missing Items, Officer Notes, Documents):
 
 1. Create a new embedding text formatter for each model
-2. Add a new VectorStore entry for each source type (or add a `source_type` column)
-3. Update the retriever to search across all sources
-4. Update the prompt to handle multiple source types
+2. Add a new VectorStore entry for each source type (or add a `source_type` column to `models/VectorStore.js`)
+3. Update `src/ai/retriever/retrieverService.js` to search across all sources
+4. Update `src/ai/prompts/chatPrompt.js` to handle multiple source types
 
 ## Security
 
-- The `/api/chat` endpoint is currently **public**. Add authentication middleware if needed by uncommenting the `protect` middleware in `src/routes/chatRoutes.js`.
-- API key validation happens at application startup.
+- The `/api/chat` endpoint is currently **public**. Add authentication middleware if needed by updating `routes/chatRoutes.js`.
+- API key validation happens at application startup via `config/ai.js`.
 - Vector operations are non-blocking — the main API won't fail if vector ingestion fails.

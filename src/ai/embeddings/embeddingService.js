@@ -5,7 +5,7 @@
  * and generates vector embeddings using Google's embedding model.
  */
 const { GoogleGenerativeAIEmbeddings } = require("@langchain/google-genai");
-const aiConfig = require("../../config/ai");
+const aiConfig = require("../../../config/ai");
 
 // Initialize the embeddings model
 const embeddings = new GoogleGenerativeAIEmbeddings({

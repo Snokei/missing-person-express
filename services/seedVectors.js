@@ -6,9 +6,9 @@
  * for the first time, or after enabling vector search on an existing database.
  *
  * Usage:
- *   node src/services/seedVectors.js
+ *   node services/seedVectors.js
  */
-const { sequelize, MissingPerson } = require("../../models");
+const { sequelize, MissingPerson } = require("../models");
 const { ingestMissingPerson } = require("./vectorStoreService");
 
 async function seedAllVectors() {

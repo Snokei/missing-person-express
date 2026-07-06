@@ -4,7 +4,7 @@
  * Bridges the vector store and the AI chat chain.
  * Provides a clean interface to retrieve relevant context for a user query.
  */
-const { similaritySearch, rawVectorSearch } = require("../../services/vectorStoreService");
+const { similaritySearch, rawVectorSearch } = require("../../../services/vectorStoreService");
 
 /**
  * Retrieves the top-k most relevant context strings for a given query.

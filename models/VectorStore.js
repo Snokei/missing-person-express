@@ -8,7 +8,7 @@
  * Run the SQL in `src/config/pgvector.sql` to enable the extension.
  */
 const { DataTypes } = require("sequelize");
-const sequelize = require("../../config/database");
+const sequelize = require("../config/database");
 
 const VectorStore = sequelize.define(
   "VectorStore",

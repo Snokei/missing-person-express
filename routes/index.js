@@ -4,7 +4,7 @@ const trackingRoutes = require("./trackingRoutes");
 const notificationRoutes = require("./notificationRoutes");
 const missingPersonRoutes = require("./missingPersonRoutes");
 const missingItemRoutes = require("./missingItemRoutes");
-const chatRoutes = require("../src/routes/chatRoutes");
+const chatRoutes = require("./chatRoutes");
 const router = express.Router();
 
 router.get("/health", (req, res) => {

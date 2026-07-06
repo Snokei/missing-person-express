@@ -4,7 +4,7 @@
  * Handles HTTP requests for the RAG chatbot endpoint.
  * Validates input, invokes the chat chain, and returns structured responses.
  */
-const { processMessage } = require("../ai/chains/chatChain");
+const { processMessage } = require("../src/ai/chains/chatChain");
 
 /**
  * POST /api/chat
