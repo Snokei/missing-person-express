@@ -20,7 +20,7 @@ exports.login = asyncHandler(async (req, res) => {
   if (!user) {
     return res.status(401).json({
       success: false,
-      message: "Invalid phone number or password",
+      message: "Invalid phone number or password.",
     });
   }
 
