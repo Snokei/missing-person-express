@@ -16,22 +16,30 @@ const {
 
 /**
  * Computes cosine similarity between two vectors.
+ * 
+ * BEGINNER EXPLANATION:
+ * Think of vectors as arrows pointing in a specific direction in space.
+ * - If two arrows point in the exact same direction, they are very similar (score = 1).
+ * - If they point in opposite directions, they are entirely different (score = 0).
+ * This function calculates how aligned two arrows are.
  *
- * @param {number[]} vecA - First vector
- * @param {number[]} vecB - Second vector
+ * @param {number[]} vecA - First vector (e.g., the user's question)
+ * @param {number[]} vecB - Second vector (e.g., a database record)
  * @returns {number} Cosine similarity score (0 to 1)
  */
 function cosineSimilarity(vecA, vecB) {
-  let dotProduct = 0;
-  let magnitudeA = 0;
-  let magnitudeB = 0;
+  let dotProduct = 0; // Measures how much the arrows point together
+  let magnitudeA = 0; // The length of arrow A
+  let magnitudeB = 0; // The length of arrow B
 
+  // Loop through all 768 numbers in the vector array
   for (let i = 0; i < vecA.length; i++) {
     dotProduct += vecA[i] * vecB[i];
     magnitudeA += vecA[i] * vecA[i];
     magnitudeB += vecB[i] * vecB[i];
   }
 
+  // Calculate the final score using standard math formula
   const denom = Math.sqrt(magnitudeA) * Math.sqrt(magnitudeB);
   return denom === 0 ? 0 : dotProduct / denom;
 }
